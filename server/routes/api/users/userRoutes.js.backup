@@ -1,0 +1,59 @@
+var express = require('express');
+var router = express.Router();
+
+let users = require("../../../data/users.json");
+const { use } = require('./userRoutes.js.backup');
+
+
+// Fetch all users
+router.get('/', function(req, res, next) {
+  res.send(users);
+});
+
+// Fetch by username
+router.get('/:username', function(req, res, next)  {
+  const user =  users.find(element => element.username == req.params.username);
+  res.send(user);
+});
+
+//create
+router.post('/', function(req, res, next) {
+  let found =  users.find(element => element.username == req.body.username || element.id == req.body.id);
+  if (found){
+    res.send({ error: { message : "Duplicateed data.", result : req.body}});
+  }else{
+    users.push(req.body);
+    res.send({ success: { message : "Inserted successfully.", result : req.body}});
+  }
+});
+
+//PUT
+router.put('/:id', function(req,res,next) {
+  users.forEach((user, index) => {
+    if(user.id == req.params.id){
+      users[index] = req.body;
+     }
+  });
+  res.send({ success: { message : "Updated successfully.", result : req.body}});
+});
+
+//PATCH
+router.patch('/:id', function(req,res,next) {
+  users.forEach((user, index) => {
+    if(user.id == req.params.id) {
+      let keys = Object.keys(req.body);
+      keys.forEach(key => {
+        user[key] = req.body[key];
+      });
+     }
+  });
+  res.send({ success: { message : "Patched successfully.", result : req.body}});
+});
+
+router.delete('/:id', function(req,res,next) {
+    let user = users.find(user => user.id == req.params.id);
+    users = users.filter(user => user.id != req.params.id);
+    res.send({ success: { message : "Deleted successfully.", result : req.user}});
+});
+
+module.exports = router;
